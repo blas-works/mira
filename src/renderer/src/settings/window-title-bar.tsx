@@ -4,7 +4,7 @@ export function WindowTitleBar(): React.JSX.Element {
   }
 
   return (
-    <div className="h-10 flex items-center px-4 border-b border-border bg-card/80 backdrop-blur-sm select-none [-webkit-app-region:drag]">
+    <div className="h-10 flex items-center px-4 border-b border-border bg-card/80 backdrop-blur-sm select-none app-drag-region">
       <div className="flex-1" />
       <span className="text-xs font-medium text-muted-foreground tracking-tight">Preferences</span>
       <div className="flex-1 flex justify-end">

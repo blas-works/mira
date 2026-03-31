@@ -17,7 +17,7 @@ export function ColorToast({ hex, position, onDismiss }: ColorToastProps): React
 
   return (
     <div
-      className="absolute z-[100] flex items-center gap-2 px-3 py-2 rounded-lg bg-(--toolbar-bg) backdrop-blur-xl border border-(--toolbar-border) shadow-2xl animate-toolbar-enter pointer-events-none"
+      className="absolute z-100 flex items-center gap-2 px-3 py-2 rounded-lg bg-(--toolbar-bg) backdrop-blur-xl border border-(--toolbar-border) shadow-2xl animate-toolbar-enter pointer-events-none"
       style={{
         left: position.x + 16,
         top: position.y - 16

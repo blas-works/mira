@@ -131,7 +131,7 @@ export function EyedropperLoupe({
   return (
     <div
       ref={containerRef}
-      className="fixed z-[90] flex-col items-center gap-1.5 pointer-events-none"
+      className="fixed z-90 flex-col items-center gap-1.5 pointer-events-none"
       style={{ display: 'none' }}
     >
       <canvas
