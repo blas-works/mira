@@ -1,4 +1,6 @@
 import { app } from 'electron'
+import { writeFileSync, unlinkSync, existsSync, mkdirSync } from 'fs'
+import { join } from 'path'
 import { DEFAULT_SETTINGS } from '../../shared/constants'
 import type { AppSettings } from '../../shared/types'
 
@@ -49,7 +51,46 @@ export function updateSettings(partial: Partial<AppSettings>): AppSettings {
 
 export function applyLaunchAtStartup(): void {
   const settings = getSettings()
-  app.setLoginItemSettings({ openAtLogin: settings.launchAtStartup })
+  const enabled = settings.launchAtStartup
+
+  if (process.platform === 'linux') {
+    applyLinuxAutostart(enabled)
+  } else {
+    app.setLoginItemSettings({
+      openAtLogin: enabled,
+      ...(process.platform === 'win32' && { path: app.getPath('exe') })
+    })
+  }
+}
+
+function applyLinuxAutostart(enabled: boolean): void {
+  const autostartDir = join(app.getPath('home'), '.config', 'autostart')
+  const desktopFilePath = join(autostartDir, `${app.getName()}.desktop`)
+
+  if (!enabled) {
+    if (existsSync(desktopFilePath)) {
+      unlinkSync(desktopFilePath)
+    }
+    return
+  }
+
+  const execPath = process.env['APPIMAGE'] ?? app.getPath('exe')
+  const desktopEntry = [
+    '[Desktop Entry]',
+    'Type=Application',
+    `Name=${app.getName()}`,
+    `Exec="${execPath}"`,
+    'Terminal=false',
+    'StartupNotify=false',
+    `Comment=${app.getName()} screenshot tool`,
+    'Categories=Utility;',
+    'X-GNOME-Autostart-enabled=true'
+  ].join('\n')
+
+  if (!existsSync(autostartDir)) {
+    mkdirSync(autostartDir, { recursive: true })
+  }
+  writeFileSync(desktopFilePath, desktopEntry, 'utf-8')
 }
 
 export function getShortcut(action: keyof AppSettings['shortcuts']): string {
