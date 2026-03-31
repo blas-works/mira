@@ -1,7 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-/* eslint-disable */
 import { createToolHandlers, type ToolHandler } from '@/lib/annotation-tools'
-import type { AnnotationTool } from '@shared/types'
+import type {
+  AnnotationTool,
+  PenStroke,
+  ArrowAnnotation,
+  RectAnnotation,
+  BlurAnnotation
+} from '@shared/types'
 
 describe('createToolHandlers', () => {
   let handlers: Record<AnnotationTool, ToolHandler>
@@ -50,9 +55,10 @@ describe('createToolHandlers', () => {
       const result = handlers.pen.onMouseMove({ x: 10, y: 10 }, '#f00')
       expect(result).not.toBeNull()
       expect(result!.type).toBe('pen')
-      expect(result!.color).toBe('#f00')
-      expect((result as any).points).toHaveLength(2)
-      expect((result as any).width).toBe(3)
+      const pen = result as unknown as PenStroke
+      expect(pen.color).toBe('#f00')
+      expect(pen.points).toHaveLength(2)
+      expect(pen.width).toBe(3)
     })
 
     it('returns null on mouseUp with single point', () => {
@@ -66,7 +72,7 @@ describe('createToolHandlers', () => {
       const result = handlers.pen.onMouseUp({ x: 20, y: 20 }, '#f00')
       expect(result).not.toBeNull()
       expect(result!.type).toBe('pen')
-      expect((result as any).points.length).toBeGreaterThanOrEqual(2)
+      expect((result as unknown as PenStroke).points.length).toBeGreaterThanOrEqual(2)
     })
   })
 
@@ -86,9 +92,10 @@ describe('createToolHandlers', () => {
       const result = handlers.arrow.onMouseMove({ x: 50, y: 50 }, '#f00')
       expect(result).not.toBeNull()
       expect(result!.type).toBe('arrow')
-      expect((result as any).start).toEqual({ x: 0, y: 0 })
-      expect((result as any).end).toEqual({ x: 50, y: 50 })
-      expect((result as any).width).toBe(3)
+      const arrow = result as unknown as ArrowAnnotation
+      expect(arrow.start).toEqual({ x: 0, y: 0 })
+      expect(arrow.end).toEqual({ x: 50, y: 50 })
+      expect(arrow.width).toBe(3)
     })
 
     it('returns annotation on mouseUp', () => {
@@ -111,7 +118,7 @@ describe('createToolHandlers', () => {
       const result = handlers.rect.onMouseMove({ x: 50, y: 50 }, '#f00')
       expect(result).not.toBeNull()
       expect(result!.type).toBe('rect')
-      expect((result as any).width).toBe(2)
+      expect((result as unknown as RectAnnotation).width).toBe(2)
     })
 
     it('returns annotation on mouseUp', () => {
@@ -164,8 +171,9 @@ describe('createToolHandlers', () => {
       const result = handlers.blur.onMouseUp({ x: 50, y: 50 }, '#fff')
       expect(result).not.toBeNull()
       expect(result!.type).toBe('blur')
-      expect((result as any).start).toEqual({ x: 0, y: 0 })
-      expect((result as any).end).toEqual({ x: 50, y: 50 })
+      const blur = result as unknown as BlurAnnotation
+      expect(blur.start).toEqual({ x: 0, y: 0 })
+      expect(blur.end).toEqual({ x: 50, y: 50 })
     })
 
     it('reset clears state', () => {
