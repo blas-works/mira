@@ -1,0 +1,298 @@
+import { app, dialog, shell, BrowserWindow } from 'electron'
+import { spawn } from 'child_process'
+import { accessSync, constants as fsConstants } from 'fs'
+import { autoUpdater } from 'electron-updater'
+import { is } from '@electron-toolkit/utils'
+import type { UpdateInfo, UpdateMetadata, UpdatePriority, PendingUpdate } from '../shared/types'
+
+const RELEASE_URL = 'https://github.com/blas-works/mira/releases/latest'
+const METADATA_URL =
+  'https://github.com/blas-works/mira/releases/latest/download/update-metadata.json'
+
+const canAutoUpdate = process.platform !== 'linux' || !!process.env.APPIMAGE
+
+const POLL_INTERVALS = {
+  normal: 60 * 60 * 1000,
+  security: 15 * 60 * 1000,
+  critical: 5 * 60 * 1000
+} as const
+
+interface StoreInterface {
+  get: (key: string) => unknown
+  set: (key: string, value: unknown) => void
+}
+
+let mainWindowRef: BrowserWindow | null = null
+let storeRef: StoreInterface | null = null
+let checkInterval: NodeJS.Timeout | null = null
+let snoozeTimeout: NodeJS.Timeout | null = null
+let lastPriority: UpdatePriority = 'normal'
+let updateDownloaded = false
+let lastStatus: UpdateInfo = { available: false }
+
+export function setupAutoUpdater(mainWindow: BrowserWindow | null, store: StoreInterface): void {
+  if (is.dev) return
+
+  mainWindowRef = mainWindow
+  storeRef = store
+
+  autoUpdater.autoDownload = false
+  autoUpdater.autoInstallOnAppQuit = true
+
+  autoUpdater.on('update-available', (info) => {
+    console.log('[AutoUpdater] Update available:', info.version)
+
+    if (process.platform === 'darwin') {
+      handleBrewUpdateAvailable(info.version)
+      return
+    }
+
+    if (!canAutoUpdate) {
+      showLinuxManualUpdateDialog(info.version)
+      return
+    }
+
+    handleUpdateAvailable(info.version)
+  })
+
+  autoUpdater.on('update-not-available', () => {
+    console.log('[AutoUpdater] No updates available')
+    sendUpdateStatus({ available: false })
+  })
+
+  autoUpdater.on('download-progress', (progress) => {
+    const percent = Math.round(progress.percent)
+    console.log('[AutoUpdater] Download progress:', percent + '%')
+    sendUpdateStatus({
+      ...lastStatus,
+      progress: percent,
+      downloaded: false
+    })
+  })
+
+  autoUpdater.on('update-downloaded', () => {
+    console.log('[AutoUpdater] Update downloaded')
+    updateDownloaded = true
+
+    const pending: PendingUpdate = {
+      version: lastStatus.version!,
+      priority: lastStatus.priority || 'normal',
+      message: lastStatus.message
+    }
+    storeRef?.set('pendingUpdate', pending)
+
+    sendUpdateStatus({
+      ...lastStatus,
+      progress: 100,
+      downloaded: true
+    })
+  })
+
+  autoUpdater.on('error', (error) => {
+    console.error('[AutoUpdater] Error:', error.message)
+    sendUpdateStatus({ available: false })
+  })
+}
+
+export function checkPendingUpdate(): void {
+  if (is.dev || !storeRef || process.platform === 'darwin') return
+
+  const pending = storeRef.get('pendingUpdate') as PendingUpdate | null
+  if (!pending) return
+
+  lastPriority = pending.priority
+  updateDownloaded = true
+
+  lastStatus = {
+    available: true,
+    version: pending.version,
+    priority: pending.priority,
+    message: pending.message,
+    progress: 100,
+    downloaded: true
+  }
+
+  sendUpdateStatus(lastStatus)
+}
+
+async function handleUpdateAvailable(version: string): Promise<void> {
+  console.log('[AutoUpdater] Handling update available for version:', version)
+
+  const metadata = await fetchUpdateMetadata()
+  const priority = metadata?.priority || 'normal'
+  const previousPriority = lastPriority
+
+  lastPriority = priority
+  updateDownloaded = false
+
+  lastStatus = {
+    available: true,
+    version,
+    priority,
+    message: metadata?.message,
+    progress: 0,
+    downloaded: false
+  }
+
+  sendUpdateStatus(lastStatus)
+
+  console.log('[AutoUpdater] Starting update download')
+  autoUpdater.downloadUpdate()
+
+  if (previousPriority !== priority && checkInterval) {
+    startPolling()
+  }
+}
+
+async function handleBrewUpdateAvailable(version: string): Promise<void> {
+  console.log('[AutoUpdater] Brew update available:', version)
+  const metadata = await fetchUpdateMetadata()
+  const priority = metadata?.priority || 'normal'
+
+  lastPriority = priority
+  lastStatus = {
+    available: true,
+    version,
+    priority,
+    message: metadata?.message,
+    brewUpdate: true
+  }
+
+  sendUpdateStatus(lastStatus)
+}
+
+async function fetchUpdateMetadata(): Promise<UpdateMetadata | null> {
+  try {
+    const response = await fetch(METADATA_URL)
+    if (!response.ok) return null
+    return await response.json()
+  } catch (error) {
+    console.warn('[AutoUpdater] Could not fetch update metadata:', error)
+    return null
+  }
+}
+
+function showLinuxManualUpdateDialog(version: string): void {
+  dialog
+    .showMessageBox({
+      type: 'info',
+      title: 'Update available',
+      message: `A new version (${version}) is available.`,
+      detail:
+        'Automatic updates are only supported for AppImage installations. Please download the update manually.',
+      buttons: ['Download now', 'Later']
+    })
+    .then((result) => {
+      if (result.response === 0) {
+        shell.openExternal(RELEASE_URL)
+      }
+    })
+}
+
+function sendUpdateStatus(status: UpdateInfo): void {
+  lastStatus = status
+  if (mainWindowRef && !mainWindowRef.isDestroyed()) {
+    mainWindowRef.webContents.send('update-status', status)
+  }
+}
+
+export function setMainWindow(window: BrowserWindow): void {
+  mainWindowRef = window
+}
+
+export function checkForUpdates(): void {
+  if (is.dev) return
+
+  try {
+    console.log('[AutoUpdater] Checking for updates...')
+    autoUpdater.checkForUpdates()
+  } catch (error) {
+    console.error('[AutoUpdater] Failed to check for updates:', error)
+  }
+}
+
+export function startPolling(): void {
+  if (is.dev) return
+
+  checkForUpdates()
+
+  const interval = POLL_INTERVALS[lastPriority] || POLL_INTERVALS.normal
+
+  if (checkInterval) {
+    clearInterval(checkInterval)
+  }
+
+  checkInterval = setInterval(() => {
+    checkForUpdates()
+  }, interval)
+}
+
+export function stopPolling(): void {
+  if (checkInterval) {
+    clearInterval(checkInterval)
+    checkInterval = null
+  }
+}
+
+export function getUpdateStatus(): UpdateInfo {
+  return {
+    ...lastStatus,
+    downloaded: updateDownloaded
+  }
+}
+
+export function forceRestart(): void {
+  if (updateDownloaded) {
+    storeRef?.set('pendingUpdate', null)
+    autoUpdater.quitAndInstall()
+  }
+}
+
+export function runBrewUpgrade(): void {
+  if (process.platform !== 'darwin') return
+
+  sendUpdateStatus({ ...lastStatus, brewUpdating: true, brewError: undefined })
+
+  const brewPaths = ['/opt/homebrew/bin/brew', '/usr/local/bin/brew']
+  const brewPath = brewPaths.find((p) => {
+    try {
+      accessSync(p, fsConstants.X_OK)
+      return true
+    } catch {
+      return false
+    }
+  })
+
+  if (!brewPath) {
+    sendUpdateStatus({ ...lastStatus, brewUpdating: false, brewError: 'Brew not found' })
+    return
+  }
+
+  const child = spawn(
+    'sh',
+    ['-c', `${brewPath} upgrade --cask mira 2>&1 && sleep 1 && open -a "Mira"`],
+    { detached: true, stdio: 'ignore' }
+  )
+  child.unref()
+
+  setTimeout(() => {
+    app.exit(0)
+  }, 1000)
+}
+
+export function snoozeCriticalRestart(): void {
+  if (snoozeTimeout) {
+    clearTimeout(snoozeTimeout)
+  }
+
+  snoozeTimeout = setTimeout(
+    () => {
+      snoozeTimeout = null
+      sendUpdateStatus({
+        ...lastStatus,
+        downloaded: updateDownloaded
+      })
+    },
+    5 * 60 * 1000
+  )
+}
