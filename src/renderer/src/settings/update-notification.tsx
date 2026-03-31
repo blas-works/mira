@@ -101,7 +101,7 @@ function BannerContent({
 
     return (
       <div className="flex flex-col gap-1.5 rounded-lg bg-red-950/90 backdrop-blur-md border border-red-900/30 px-3 py-2">
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           <svg
             className="h-3.5 w-3.5 shrink-0 text-red-400"
             fill="none"
@@ -122,19 +122,19 @@ function BannerContent({
           </span>
         </div>
 
-        <div className="flex gap-1.5">
+        <div className="flex items-center gap-2">
           <button
             onClick={onSnooze}
-            className="flex-1 h-6 rounded-sm text-red-400/60 hover:text-red-300 text-[11px] bg-transparent border-none cursor-pointer"
+            className="h-6 px-3 rounded-md text-red-400/60 hover:text-red-300 hover:bg-red-900/30 text-[11px] bg-transparent border-none cursor-pointer transition-colors"
           >
             5 min
           </button>
           <button
             onClick={onRestart}
             disabled={!isDownloaded}
-            className="flex-1 h-6 rounded-sm bg-red-900/50 text-red-200 hover:bg-red-900/70 text-[11px] border-none cursor-pointer disabled:opacity-50"
+            className="flex-1 h-6 px-3 rounded-md bg-red-900/50 text-red-200 hover:bg-red-900/70 text-[11px] font-medium border-none cursor-pointer disabled:opacity-50 transition-colors"
           >
-            {isDownloaded ? 'Restart' : `Downloading... ${progress}%`}
+            {isDownloaded ? 'Restart now' : `Downloading... ${progress}%`}
           </button>
         </div>
       </div>
@@ -166,16 +166,16 @@ function BannerContent({
 
         <button
           onClick={onDismiss}
-          className="h-6 rounded-sm text-orange-400/50 hover:text-orange-300 text-[11px] bg-transparent border-none cursor-pointer"
+          className="h-6 px-2.5 rounded-md text-orange-400/50 hover:text-orange-300 hover:bg-orange-900/30 text-[11px] bg-transparent border-none cursor-pointer transition-colors"
         >
           Later
         </button>
         {isDownloaded ? (
           <button
             onClick={onRestart}
-            className="h-6 rounded-sm bg-orange-900/50 text-orange-200 hover:bg-orange-900/70 text-[11px] border-none cursor-pointer"
+            className="h-6 px-3 rounded-md bg-orange-900/50 text-orange-200 hover:bg-orange-900/70 text-[11px] font-medium border-none cursor-pointer transition-colors"
           >
-            Restart
+            Restart now
           </button>
         ) : isDownloading ? (
           <span className="text-[11px] text-orange-400/60 font-mono">
@@ -210,16 +210,16 @@ function BannerContent({
 
       <button
         onClick={onDismiss}
-        className="h-6 text-zinc-600 hover:text-zinc-400 text-[11px] rounded-sm bg-transparent border-none cursor-pointer"
+        className="h-6 px-2.5 rounded-md text-zinc-600 hover:text-zinc-400 hover:bg-zinc-800/80 text-[11px] bg-transparent border-none cursor-pointer transition-colors"
       >
         Skip
       </button>
       {isDownloaded ? (
         <button
           onClick={onRestart}
-          className="h-6 bg-zinc-800 text-zinc-300 hover:bg-zinc-700 text-[11px] rounded-sm border-none cursor-pointer"
+          className="h-6 px-3 rounded-md bg-zinc-800 text-zinc-300 hover:bg-zinc-700 text-[11px] font-medium border-none cursor-pointer transition-colors"
         >
-          Restart
+          Restart now
         </button>
       ) : isDownloading ? (
         <span className="text-[11px] text-zinc-500 font-mono">Downloading... {progress}%</span>
@@ -313,13 +313,13 @@ function BrewUpdateBanner({
           <>
             <button
               onClick={onDismiss}
-              className={`h-6 rounded-sm ${skipBtnColor} text-[11px] bg-transparent border-none cursor-pointer`}
+              className={`h-6 px-2.5 rounded-md ${skipBtnColor} text-[11px] bg-transparent border-none cursor-pointer transition-colors`}
             >
               Skip
             </button>
             <button
               onClick={onBrewUpgrade}
-              className={`h-6 rounded-sm ${updateBtnColor} text-[11px] border-none cursor-pointer`}
+              className={`h-6 px-3 rounded-md ${updateBtnColor} text-[11px] font-medium border-none cursor-pointer transition-colors`}
             >
               Update
             </button>
