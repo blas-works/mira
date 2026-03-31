@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.2](https://github.com/blas-works/mira/compare/v1.3.1...v1.3.2) (2026-03-31)
+
+
+### Bug Fixes
+
+* banner notificaciones ([0b64d66](https://github.com/blas-works/mira/commit/0b64d662c7e6b8df62d9de3f30022636ccf812c7))
+
 ## [1.3.1](https://github.com/blas-works/mira/compare/v1.3.0...v1.3.1) (2026-03-31)
 
 
