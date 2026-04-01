@@ -33,8 +33,6 @@ describe('appSettingsSchema', () => {
       ocrLanguages: ['spa'],
       shortcuts: { captureArea: 'Ctrl+A' }
     })
-    expect(result.success).toBe(false)
-  })
     expect(result.success).toBe(true)
   })
 
