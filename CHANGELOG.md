@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.4.0](https://github.com/blas-works/mira/compare/v1.3.2...v1.4.0) (2026-04-01)
+
+
+### Features
+
+* ocr ([53e1941](https://github.com/blas-works/mira/commit/53e19418fb74e514887af7c9750bb969865f6ddf))
+
+
+### Bug Fixes
+
+* linter ([710e383](https://github.com/blas-works/mira/commit/710e383a8f97c890f11117abac8d1d569d75b78f))
+* test ([24d9836](https://github.com/blas-works/mira/commit/24d9836a1b388c24fb681c8f5a22ef35220d575b))
+
 ## [1.3.2](https://github.com/blas-works/mira/compare/v1.3.1...v1.3.2) (2026-03-31)
 
 
