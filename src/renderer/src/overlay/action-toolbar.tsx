@@ -1,10 +1,11 @@
-import { Copy, Save, X, Undo2, Redo2 } from 'lucide-react'
+import { Copy, Save, X, Undo2, Redo2, ScanText } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Separator } from '@/components/ui/separator'
 
 interface ActionToolbarProps {
   onCopy: () => void
   onSave: () => void
+  onOcr: () => void
   onCancel: () => void
   onUndo: () => void
   onRedo: () => void
@@ -18,6 +19,7 @@ const modKey = navigator.platform.includes('Mac') ? '⌘' : 'Ctrl+'
 export function ActionToolbar({
   onCopy,
   onSave,
+  onOcr,
   onCancel,
   onUndo,
   onRedo,
@@ -92,6 +94,18 @@ export function ActionToolbar({
           </TooltipTrigger>
           <TooltipContent side="bottom" sideOffset={5} className="text-xs font-medium">
             Save ({modKey}S)
+          </TooltipContent>
+        </Tooltip>
+
+        <Tooltip>
+          <TooltipTrigger
+            onClick={onOcr}
+            className="p-2 rounded-md flex items-center justify-center text-neutral-400 hover:bg-white/10 hover:text-foreground transition-all duration-150"
+          >
+            <ScanText className="w-4 h-4" />
+          </TooltipTrigger>
+          <TooltipContent side="bottom" sideOffset={5} className="text-xs font-medium">
+            OCR — Copy text
           </TooltipContent>
         </Tooltip>
 

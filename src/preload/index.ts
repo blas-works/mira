@@ -30,6 +30,9 @@ const api = {
     },
     cancel: (): void => {
       ipcRenderer.send(IPC_CHANNELS.CAPTURE_CANCEL)
+    },
+    ocr: (dataURL: string): void => {
+      ipcRenderer.send(IPC_CHANNELS.CAPTURE_OCR, { dataURL })
     }
   },
   editor: {
@@ -44,6 +47,9 @@ const api = {
     },
     cancel: (): void => {
       ipcRenderer.send(IPC_CHANNELS.EDITOR_CANCEL)
+    },
+    ocr: (dataURL: string): void => {
+      ipcRenderer.send(IPC_CHANNELS.EDITOR_OCR, { dataURL })
     },
     resize: (width: number, height: number): void => {
       ipcRenderer.send(IPC_CHANNELS.EDITOR_RESIZE, { width, height })

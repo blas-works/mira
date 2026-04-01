@@ -2,6 +2,7 @@ export interface AppSettings {
   launchAtStartup: boolean
   captureSound: boolean
   showMagnifier: boolean
+  ocrLanguages: string[]
   shortcuts: ShortcutConfig
 }
 

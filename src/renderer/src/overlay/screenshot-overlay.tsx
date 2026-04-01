@@ -47,6 +47,7 @@ export function ScreenshotOverlay(): React.JSX.Element {
     showDiscardDialog,
     handleCopy,
     handleSave,
+    handleOcr,
     handleCancel,
     handleConfirmDiscard,
     handleDismissDiscard
@@ -159,6 +160,7 @@ export function ScreenshotOverlay(): React.JSX.Element {
           <ActionToolbar
             onCopy={handleCopy}
             onSave={handleSave}
+            onOcr={handleOcr}
             onCancel={handleCancel}
             onUndo={() => annotationRef.current?.undo()}
             onRedo={() => annotationRef.current?.redo()}

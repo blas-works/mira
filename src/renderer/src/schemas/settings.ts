@@ -8,6 +8,7 @@ export const appSettingsSchema = z.object({
   launchAtStartup: z.boolean(),
   captureSound: z.boolean(),
   showMagnifier: z.boolean(),
+  ocrLanguages: z.array(z.string().min(1)).min(1),
   shortcuts: shortcutConfigSchema
 })
 

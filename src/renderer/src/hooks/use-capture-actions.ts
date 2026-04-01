@@ -12,6 +12,7 @@ interface UseCaptureActionsReturn {
   showDiscardDialog: boolean
   handleCopy: () => void
   handleSave: () => void
+  handleOcr: () => void
   handleCancel: () => void
   handleConfirmDiscard: () => void
   handleDismissDiscard: () => void
@@ -83,6 +84,12 @@ export function useCaptureActions({
     if (dataURL) window.api.capture.save(dataURL)
   }, [selection, captureData, compositeCapture])
 
+  const handleOcr = useCallback((): void => {
+    if (!selection || !captureData) return
+    const dataURL = compositeCapture()
+    if (dataURL) window.api.capture.ocr(dataURL)
+  }, [selection, captureData, compositeCapture])
+
   const handleCancel = useCallback((): void => {
     if (annotationsCount > 0) {
       setShowDiscardDialog(true)
@@ -104,6 +111,7 @@ export function useCaptureActions({
     showDiscardDialog,
     handleCopy,
     handleSave,
+    handleOcr,
     handleCancel,
     handleConfirmDiscard,
     handleDismissDiscard

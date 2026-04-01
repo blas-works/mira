@@ -2,7 +2,9 @@ import { ipcMain, dialog, Notification, screen } from 'electron'
 import { writeFile } from 'fs/promises'
 import { IPC_CHANNELS } from '../../shared/constants'
 import type { EditorData } from '../../shared/types'
-import { copyImageToClipboard } from '../services/clipboard'
+import { copyImageToClipboard, copyTextToClipboard } from '../services/clipboard'
+import { recognizeText } from '../services/ocr'
+import { getSettings } from '../services/store'
 import { destroyOverlayWindow } from '../windows/overlay'
 import { createEditorWindow, destroyEditorWindow, getEditorWindow } from '../windows/editor'
 
@@ -59,6 +61,21 @@ async function handleSaveAction(dataURL: unknown, destroyFn: () => void): Promis
   destroyFn()
 }
 
+async function handleOcrAction(dataURL: unknown, destroyFn: () => void): Promise<void> {
+  validatePngDataURL(dataURL)
+  const settings = getSettings()
+
+  const text = await recognizeText(dataURL as string, settings.ocrLanguages)
+  copyTextToClipboard(text)
+  destroyFn()
+
+  new Notification({
+    title: 'Mira',
+    body: text.length > 0 ? 'Text copied to clipboard' : 'No text detected',
+    silent: true
+  }).show()
+}
+
 export function registerCaptureHandlers(): void {
   ipcMain.on(IPC_CHANNELS.CAPTURE_COPY, (_event, { dataURL }: { dataURL: unknown }) => {
     handleCopyAction(dataURL, destroyOverlayWindow)
@@ -70,6 +87,10 @@ export function registerCaptureHandlers(): void {
 
   ipcMain.on(IPC_CHANNELS.CAPTURE_CANCEL, () => {
     destroyOverlayWindow()
+  })
+
+  ipcMain.on(IPC_CHANNELS.CAPTURE_OCR, async (_event, { dataURL }: { dataURL: unknown }) => {
+    await handleOcrAction(dataURL, destroyOverlayWindow)
   })
 
   ipcMain.on(IPC_CHANNELS.CAPTURE_OPEN_EDITOR, (_event, data: EditorData) => {
@@ -87,6 +108,10 @@ export function registerCaptureHandlers(): void {
 
   ipcMain.on(IPC_CHANNELS.EDITOR_CANCEL, () => {
     destroyEditorWindow()
+  })
+
+  ipcMain.on(IPC_CHANNELS.EDITOR_OCR, async (_event, { dataURL }: { dataURL: unknown }) => {
+    await handleOcrAction(dataURL, destroyEditorWindow)
   })
 
   ipcMain.on(

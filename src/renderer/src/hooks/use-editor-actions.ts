@@ -12,6 +12,7 @@ interface UseEditorActionsReturn {
   showDiscardDialog: boolean
   handleCopy: () => void
   handleSave: () => void
+  handleOcr: () => void
   handleCancel: () => void
   handleConfirmDiscard: () => void
   handleDismissDiscard: () => void
@@ -66,6 +67,11 @@ export function useEditorActions({
     if (dataURL) window.api.editor.save(dataURL)
   }, [compositeCapture])
 
+  const handleOcr = useCallback((): void => {
+    const dataURL = compositeCapture()
+    if (dataURL) window.api.editor.ocr(dataURL)
+  }, [compositeCapture])
+
   const handleCancel = useCallback((): void => {
     if (annotationsCount > 0) {
       setShowDiscardDialog(true)
@@ -87,6 +93,7 @@ export function useEditorActions({
     showDiscardDialog,
     handleCopy,
     handleSave,
+    handleOcr,
     handleCancel,
     handleConfirmDiscard,
     handleDismissDiscard

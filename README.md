@@ -54,9 +54,11 @@
 | 📋 **Actions**            | Copy to clipboard in one click                           |
 |                           | Save to file system                                      |
 |                           | Open in editor for further editing                       |
+|                           | OCR text recognition with Tesseract.js                   |
 | ⚙️ **Settings**           | Launch at startup                                        |
 |                           | Capture sound toggle                                     |
 |                           | Magnifier toggle                                         |
+|                           | OCR language selection (Spanish/English)                 |
 |                           | Customizable keyboard shortcuts                          |
 | 🖥️ **System Integration** | System tray with context menu                            |
 |                           | Platform-specific tray icons (macOS/Windows/Linux)       |

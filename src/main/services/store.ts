@@ -15,6 +15,16 @@ export async function initStore(): Promise<void> {
   const mod = await import('electron-store')
   const Store = 'default' in mod ? mod.default : mod
   store = new Store({ defaults: DEFAULT_SETTINGS }) as ElectronStore
+  migrateLegacySettings()
+}
+
+function migrateLegacySettings(): void {
+  const st = requireStore()
+  const legacy = st.get('ocrLanguage')
+  if (typeof legacy === 'string' && !st.get('ocrLanguages')) {
+    st.set('ocrLanguages', [legacy])
+    st.set('ocrLanguage', undefined)
+  }
 }
 
 export function getStore(): ElectronStore | null {
@@ -32,6 +42,7 @@ export function getSettings(): AppSettings {
     launchAtStartup: st.get('launchAtStartup') as boolean,
     captureSound: st.get('captureSound') as boolean,
     showMagnifier: st.get('showMagnifier') as boolean,
+    ocrLanguages: st.get('ocrLanguages') as string[],
     shortcuts: st.get('shortcuts') as AppSettings['shortcuts']
   }
 }

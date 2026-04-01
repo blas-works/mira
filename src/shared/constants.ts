@@ -4,10 +4,16 @@ export const DEFAULT_SETTINGS: AppSettings = {
   launchAtStartup: false,
   captureSound: true,
   showMagnifier: true,
+  ocrLanguages: ['spa'],
   shortcuts: {
     captureArea: 'CommandOrControl+1'
   }
 }
+
+export const OCR_LANGUAGES = [
+  { code: 'spa', label: 'Spanish' },
+  { code: 'eng', label: 'English' }
+] as const
 
 export const ANNOTATION_COLORS: AnnotationColor[] = [
   { name: 'red', value: '#ef4444' },
@@ -39,9 +45,11 @@ export const IPC_CHANNELS = {
   SETTINGS_UPDATE: 'settings:update',
   SHORTCUT_REGISTER: 'shortcut:register',
   CAPTURE_OPEN_EDITOR: 'capture:open-editor',
+  CAPTURE_OCR: 'capture:ocr',
   EDITOR_INIT: 'editor:init',
   EDITOR_COPY: 'editor:copy',
   EDITOR_SAVE: 'editor:save',
+  EDITOR_OCR: 'editor:ocr',
   EDITOR_CANCEL: 'editor:cancel',
   EDITOR_RESIZE: 'editor:resize',
   UPDATE_CHECK: 'update:check',

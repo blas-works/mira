@@ -9,11 +9,14 @@ const shortcutKeysSchema = z
     'Invalid shortcut key combination'
   )
 
+const ALLOWED_OCR_LANGUAGES = ['eng', 'spa'] as const
+
 export const settingsUpdateSchema = z
   .object({
     launchAtStartup: z.boolean().optional(),
     captureSound: z.boolean().optional(),
     showMagnifier: z.boolean().optional(),
+    ocrLanguages: z.array(z.enum(ALLOWED_OCR_LANGUAGES)).min(1).optional(),
     shortcuts: z
       .object({
         captureArea: shortcutKeysSchema.optional()
