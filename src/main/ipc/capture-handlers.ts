@@ -7,6 +7,7 @@ import { recognizeText } from '../services/ocr'
 import { getSettings } from '../services/store'
 import { destroyOverlayWindow } from '../windows/overlay'
 import { createEditorWindow, destroyEditorWindow, getEditorWindow } from '../windows/editor'
+import { editorDataSchema } from './validators'
 
 const DATA_URL_PNG_PREFIX = 'data:image/png;base64,'
 const MAX_DATA_URL_LENGTH = 50_000_000
@@ -93,9 +94,15 @@ export function registerCaptureHandlers(): void {
     await handleOcrAction(dataURL, destroyOverlayWindow)
   })
 
-  ipcMain.on(IPC_CHANNELS.CAPTURE_OPEN_EDITOR, (_event, data: EditorData) => {
+  ipcMain.on(IPC_CHANNELS.CAPTURE_OPEN_EDITOR, (_event, data: unknown) => {
+    const result = editorDataSchema.safeParse(data)
+    if (!result.success) {
+      console.error('[IPC] Invalid editor data:', result.error.message)
+      destroyOverlayWindow()
+      return
+    }
     destroyOverlayWindow()
-    createEditorWindow(data)
+    createEditorWindow(result.data as EditorData)
   })
 
   ipcMain.on(IPC_CHANNELS.EDITOR_COPY, (_event, { dataURL }: { dataURL: unknown }) => {

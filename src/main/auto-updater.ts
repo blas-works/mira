@@ -3,6 +3,7 @@ import { spawn } from 'child_process'
 import { accessSync, constants as fsConstants } from 'fs'
 import { autoUpdater } from 'electron-updater'
 import { is } from '@electron-toolkit/utils'
+import { z } from 'zod/v4'
 import type { UpdateInfo, UpdateMetadata, UpdatePriority, PendingUpdate } from '../shared/types'
 
 const RELEASE_URL = 'https://github.com/blas-works/mira/releases/latest'
@@ -10,6 +11,14 @@ const METADATA_URL =
   'https://github.com/blas-works/mira/releases/latest/download/update-metadata.json'
 
 const canAutoUpdate = process.platform !== 'linux' || !!process.env.APPIMAGE
+
+const updateMetadataSchema = z.object({
+  version: z.string().regex(/^\d+\.\d+\.\d+$/),
+  priority: z.enum(['normal', 'security', 'critical']),
+  message: z.string().max(500).optional(),
+  forceRestart: z.boolean().optional(),
+  releaseDate: z.string().datetime({ offset: true }).optional()
+})
 
 const POLL_INTERVALS = {
   normal: 60 * 60 * 1000,
@@ -165,7 +174,13 @@ async function fetchUpdateMetadata(): Promise<UpdateMetadata | null> {
   try {
     const response = await fetch(METADATA_URL)
     if (!response.ok) return null
-    return await response.json()
+    const raw = await response.json()
+    const result = updateMetadataSchema.safeParse(raw)
+    if (!result.success) {
+      console.warn('[AutoUpdater] Invalid metadata schema:', result.error.message)
+      return null
+    }
+    return result.data as UpdateMetadata
   } catch (error) {
     console.warn('[AutoUpdater] Could not fetch update metadata:', error)
     return null
@@ -268,16 +283,17 @@ export function runBrewUpgrade(): void {
     return
   }
 
-  const child = spawn(
-    'sh',
-    ['-c', `${brewPath} upgrade --cask mira 2>&1 && sleep 1 && open -a "Mira"`],
-    { detached: true, stdio: 'ignore' }
-  )
+  const child = spawn(brewPath, ['upgrade', '--cask', 'mira'], {
+    detached: true,
+    stdio: 'ignore'
+  })
   child.unref()
 
   setTimeout(() => {
+    const restart = spawn('open', ['-a', 'Mira'], { detached: true, stdio: 'ignore' })
+    restart.unref()
     app.exit(0)
-  }, 1000)
+  }, 2000)
 }
 
 export function snoozeCriticalRestart(): void {

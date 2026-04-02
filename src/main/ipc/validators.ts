@@ -30,3 +30,15 @@ export const shortcutRegisterSchema = z.object({
   action: z.enum(ALLOWED_SHORTCUT_ACTIONS),
   keys: shortcutKeysSchema
 })
+
+const DATA_URL_PNG_PREFIX = 'data:image/png;base64,'
+
+export const editorDataSchema = z.object({
+  imageDataURL: z
+    .string()
+    .startsWith(DATA_URL_PNG_PREFIX, 'Must be a PNG data URL')
+    .refine((val) => val.length > DATA_URL_PNG_PREFIX.length, 'Empty base64 data'),
+  width: z.number().int().positive().max(7680),
+  height: z.number().int().positive().max(4320),
+  scaleFactor: z.number().positive().max(4)
+})
