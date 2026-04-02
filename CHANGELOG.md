@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/blas-works/mira/compare/v1.4.0...v1.5.0) (2026-04-02)
+
+
+### Features
+
+* enhance CI/CD permissions and improve auto-updater metadata validation ([c06cde8](https://github.com/blas-works/mira/commit/c06cde885e8ebb53c9fe156b536dd10d2889e42b))
+
 ## [1.4.0](https://github.com/blas-works/mira/compare/v1.3.2...v1.4.0) (2026-04-01)
 
 
