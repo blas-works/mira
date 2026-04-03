@@ -1,6 +1,8 @@
 import { app, dialog, shell, BrowserWindow } from 'electron'
 import { spawn } from 'child_process'
-import { accessSync, constants as fsConstants } from 'fs'
+import { accessSync, chmodSync, constants as fsConstants, writeFileSync } from 'fs'
+import { tmpdir } from 'os'
+import { join } from 'path'
 import { autoUpdater } from 'electron-updater'
 import { is } from '@electron-toolkit/utils'
 import { z } from 'zod/v4'
@@ -283,17 +285,34 @@ export function runBrewUpgrade(): void {
     return
   }
 
-  const child = spawn(brewPath, ['upgrade', '--cask', 'mira'], {
+  const scriptContent = [
+    '#!/bin/bash',
+    'exec > /tmp/mira-update.log 2>&1',
+    'echo "Starting Mira update at $(date)"',
+    'sleep 3',
+    'echo "Running brew update..."',
+    `"${brewPath}" update`,
+    'echo "Running brew upgrade --cask mira..."',
+    `"${brewPath}" upgrade --cask mira`,
+    'echo "Update complete. Reopening Mira..."',
+    'sleep 1',
+    'open -a "Mira"',
+    'echo "Cleaning up..."',
+    'rm -f "$0"'
+  ].join('\n')
+
+  const scriptPath = join(tmpdir(), 'mira-update.sh')
+  writeFileSync(scriptPath, scriptContent)
+  chmodSync(scriptPath, 0o755)
+
+  spawn('bash', ['-c', `nohup "${scriptPath}" >/dev/null 2>&1 &`], {
     detached: true,
     stdio: 'ignore'
-  })
-  child.unref()
+  }).unref()
 
   setTimeout(() => {
-    const restart = spawn('open', ['-a', 'Mira'], { detached: true, stdio: 'ignore' })
-    restart.unref()
-    app.exit(0)
-  }, 2000)
+    app.quit()
+  }, 500)
 }
 
 export function snoozeCriticalRestart(): void {
