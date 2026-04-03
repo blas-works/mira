@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.1](https://github.com/blas-works/mira/compare/v1.5.0...v1.5.1) (2026-04-03)
+
+
+### Bug Fixes
+
+* update ([6bfa49c](https://github.com/blas-works/mira/commit/6bfa49ce17015f39bd4d4bbb88472d52cf93c26a))
+
 ## [1.5.0](https://github.com/blas-works/mira/compare/v1.4.0...v1.5.0) (2026-04-02)
 
 
