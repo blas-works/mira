@@ -1,0 +1,7 @@
+allowBuilds:
+  electron: true
+  electron-winstaller: false
+  esbuild: true
+  phantomjs-prebuilt: false
+  tesseract.js: false
+  usocket: false
