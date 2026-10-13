@@ -1,5 +1,6 @@
 import { app } from 'electron'
-import { unlink, writeFile } from 'fs/promises'
+import { randomUUID } from 'crypto'
+import { mkdtemp, rm, writeFile } from 'fs/promises'
 import { join } from 'path'
 import { Message } from 'dbus-next'
 import type { DisplayBounds } from '../../shared/types'
@@ -12,20 +13,32 @@ const KWIN_NAME = 'org.kde.KWin'
  * at an arbitrary origin. A one-shot KWin script moves it onto the virtual bounds.
  */
 export async function placeWindowWithKWin(caption: string, bounds: DisplayBounds): Promise<void> {
-  const pluginName = `mira-placement-${process.pid}-${Date.now()}`
-  const scriptPath = join(app.getPath('temp'), `${pluginName}.js`)
+  const pluginName = `mira-placement-${randomUUID()}`
   const geometry = { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }
 
-  await writeFile(
-    scriptPath,
-    `for (const w of workspace.windowList()) {
+  // KWin runs this script inside the compositor, so it must not be writable by
+  // anyone else: private 0700 directory, exclusive create, 0600 file.
+  const scriptDir = await mkdtemp(join(app.getPath('temp'), 'mira-kwin-'))
+  const scriptPath = join(scriptDir, `${pluginName}.js`)
+
+  try {
+    await writeFile(
+      scriptPath,
+      `for (const w of workspace.windowList()) {
   if (w.caption === ${JSON.stringify(caption)} && w.pid === ${process.pid}) {
     w.keepAbove = true
     w.frameGeometry = ${JSON.stringify(geometry)}
   }
-}`
-  )
+}`,
+      { flag: 'wx', mode: 0o600 }
+    )
+    await runKWinScript(scriptPath, pluginName)
+  } finally {
+    await rm(scriptDir, { recursive: true, force: true }).catch(() => {})
+  }
+}
 
+async function runKWinScript(scriptPath: string, pluginName: string): Promise<void> {
   const bus = createSessionBus()
   const call = (
     path: string,
@@ -51,6 +64,5 @@ export async function placeWindowWithKWin(caption: string, bounds: DisplayBounds
     }
   } finally {
     bus.disconnect()
-    await unlink(scriptPath).catch(() => {})
   }
 }
