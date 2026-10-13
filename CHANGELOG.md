@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.6.0](https://github.com/blas-works/mira/compare/v1.5.1...v1.6.0) (2026-10-13)
+
+
+### Features
+
+* add Wayland support for screen capturing and window placement ([3358422](https://github.com/blas-works/mira/commit/33584228f59c0d9fa00291bae7c47c8eb3d198b4))
+
+
+### Bug Fixes
+
+* captura y overlay en KDE Wayland multi-monitor ([7bdd806](https://github.com/blas-works/mira/commit/7bdd806946a228fabcab12958e212f4625fdbdc7))
+* improve Wayland window placement and screenshot handling ([61fdf17](https://github.com/blas-works/mira/commit/61fdf1799cc3312a1f396f76000719b10e268904))
+
 ## [1.5.1](https://github.com/blas-works/mira/compare/v1.5.0...v1.5.1) (2026-04-03)
 
 
