@@ -1,5 +1,7 @@
-import { desktopCapturer, screen } from 'electron'
-import type { CaptureData } from '../../shared/types'
+import { desktopCapturer, nativeImage, screen } from 'electron'
+import type { CaptureData, DisplayCapture } from '../../shared/types'
+import { isWaylandSession } from './dbus'
+import { capturePortalScreenshot } from './portal-screenshot'
 
 export async function captureAllScreens(): Promise<CaptureData> {
   const displays = screen.getAllDisplays()
@@ -12,6 +14,23 @@ export async function captureAllScreens(): Promise<CaptureData> {
   const virtualWidth = maxX - minX
   const virtualHeight = maxY - minY
   const primaryScale = screen.getPrimaryDisplay().scaleFactor
+
+  const virtualBounds = {
+    x: minX,
+    y: minY,
+    width: virtualWidth,
+    height: virtualHeight,
+    scaleFactor: primaryScale
+  }
+
+  if (isWaylandSession()) {
+    try {
+      const png = await capturePortalScreenshot()
+      return { displays: cropWorkspace(png, displays, virtualBounds), virtualBounds }
+    } catch (err) {
+      console.warn('Screenshot portal failed, falling back to desktopCapturer:', err)
+    }
+  }
 
   const sources = await desktopCapturer.getSources({
     types: ['screen'],
@@ -40,14 +59,34 @@ export async function captureAllScreens(): Promise<CaptureData> {
     }
   })
 
-  return {
-    displays: displayCaptures,
-    virtualBounds: {
-      x: minX,
-      y: minY,
-      width: virtualWidth,
-      height: virtualHeight,
-      scaleFactor: primaryScale
+  return { displays: displayCaptures, virtualBounds }
+}
+
+function cropWorkspace(
+  png: Buffer,
+  displays: Electron.Display[],
+  virtualBounds: CaptureData['virtualBounds']
+): DisplayCapture[] {
+  const image = nativeImage.createFromBuffer(png)
+  const { width, height } = image.getSize()
+  const ratioX = width / virtualBounds.width
+  const ratioY = height / virtualBounds.height
+
+  return displays.map((display) => ({
+    imageDataURL: image
+      .crop({
+        x: Math.round((display.bounds.x - virtualBounds.x) * ratioX),
+        y: Math.round((display.bounds.y - virtualBounds.y) * ratioY),
+        width: Math.round(display.bounds.width * ratioX),
+        height: Math.round(display.bounds.height * ratioY)
+      })
+      .toDataURL(),
+    bounds: {
+      x: display.bounds.x,
+      y: display.bounds.y,
+      width: display.bounds.width,
+      height: display.bounds.height,
+      scaleFactor: display.scaleFactor
     }
-  }
+  }))
 }

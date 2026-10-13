@@ -19,8 +19,8 @@
     <a href="https://www.typescriptlang.org">
       <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat-square&logo=typescript">
     </a>
-    <a href="https://bun.sh">
-      <img alt="Bun" src="https://img.shields.io/badge/Bun-1.3-000000?style=flat-square&logo=bun">
+    <a href="https://pnpm.io">
+      <img alt="pnpm" src="https://img.shields.io/badge/pnpm-11-F69220?style=flat-square&logo=pnpm">
     </a>
     <a href="https://codecov.io/gh/blas-works/mira">
       <img alt="Coverage" src="https://img.shields.io/codecov/c/github/blas-works/mira?style=flat-square&logo=codecov&label=coverage">
@@ -107,8 +107,8 @@ Download the latest version from [GitHub Releases](https://github.com/blas-works
 
 #### Prerequisites
 
-- **Node.js** >= 18.x
-- **Bun** >= 1.0 (recommended) or npm
+- **Node.js** 22 or 24 LTS
+- **pnpm** >= 11
 
 #### Quick Start
 
@@ -118,27 +118,27 @@ git clone https://github.com/blas-works/mira.git
 cd mira
 
 # Install dependencies
-bun install
+pnpm install
 
 # Run in development mode
-bun run dev
+pnpm run dev
 ```
 
 <details>
 <summary><b>📖 Development Scripts</b></summary>
 
-| Command                 | Description                         |
-| ----------------------- | ----------------------------------- |
-| `bun run dev`           | Development server with hot reload  |
-| `bun run build`         | Production build (typecheck + vite) |
-| `bun run build:unpack`  | Build without packaging             |
-| `bun run build:win`     | Build for Windows (.exe)            |
-| `bun run build:mac`     | Build for macOS (.dmg, .zip)        |
-| `bun run build:linux`   | Build for Linux (.AppImage, .deb)   |
-| `bun run test`          | Run tests in watch mode             |
-| `bun run test:run`      | Run tests once                      |
-| `bun run test:coverage` | Run tests with coverage report      |
-| `bun run lint`          | Lint code with ESLint               |
-| `bun run typecheck`     | Type check with TypeScript          |
+| Command                  | Description                         |
+| ------------------------ | ----------------------------------- |
+| `pnpm run dev`           | Development server with hot reload  |
+| `pnpm run build`         | Production build (typecheck + vite) |
+| `pnpm run build:unpack`  | Build without packaging             |
+| `pnpm run build:win`     | Build for Windows (.exe)            |
+| `pnpm run build:mac`     | Build for macOS (.dmg, .zip)        |
+| `pnpm run build:linux`   | Build for Linux (.AppImage, .deb)   |
+| `pnpm run test`          | Run tests in watch mode             |
+| `pnpm run test:run`      | Run tests once                      |
+| `pnpm run test:coverage` | Run tests with coverage report      |
+| `pnpm run lint`          | Lint code with ESLint               |
+| `pnpm run typecheck`     | Type check with TypeScript          |
 
 </details>

@@ -3,6 +3,10 @@ import { join } from 'path'
 import { is } from '@electron-toolkit/utils'
 import type { CaptureData } from '../../shared/types'
 import { IPC_CHANNELS } from '../../shared/constants'
+import { isKdeWaylandSession } from '../services/dbus'
+import { placeWindowWithKWin } from '../services/kwin-placement'
+
+const OVERLAY_TITLE = 'Mira — Capture'
 
 let overlayWindow: BrowserWindow | null = null
 
@@ -36,9 +40,16 @@ export function createOverlayWindow(captureData: CaptureData): void {
   overlayWindow.setAlwaysOnTop(true, 'screen-saver')
   overlayWindow.setIgnoreMouseEvents(false)
 
-  overlayWindow.on('ready-to-show', () => {
+  overlayWindow.on('ready-to-show', async () => {
     overlayWindow?.show()
     overlayWindow?.focus()
+
+    if (isKdeWaylandSession()) {
+      await placeWindowWithKWin(OVERLAY_TITLE, virtualBounds).catch((err) => {
+        console.warn('KWin overlay placement failed:', err)
+      })
+    }
+
     overlayWindow?.webContents.send(IPC_CHANNELS.CAPTURE_START, captureData)
   })
 
